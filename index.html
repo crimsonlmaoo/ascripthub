@@ -10,14 +10,16 @@
     />
     <style>
       :root {
-        --dark-bg: #000000;
-        --medium-bg: #1a1a1a;
-        --light-bg: #2d2d2d;
-        --text-light: #cccccc;
-        --border: #4d4d4d;
-        --success: #28a745;
-        --error: #dc3545;
-        --highlight: #d1c6b1;
+        --dark-bg: #0a0014;
+        --medium-bg: #1a0026;
+        --light-bg: #2d0040;
+        --text-light: #e0c4ff;
+        --border: #6a0dad;
+        --success: #6effb4;
+        --error: #ff4f81;
+        --highlight: #ffb3ff;
+        --glow-purple: #9f5cff;
+        --glow-magenta: #ff4fff;
       }
 
       * {
@@ -52,6 +54,9 @@
 
       .title {
         font-size: 28px;
+        background: linear-gradient(to right, var(--glow-purple), var(--glow-magenta));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
       .search-box {
@@ -81,7 +86,8 @@
       }
 
       .search-button:hover {
-        background: var(--border);
+        background: var(--glow-purple);
+        color: white;
       }
 
       .scripts-grid {
@@ -102,11 +108,13 @@
         flex-direction: column;
         justify-content: space-between;
         height: 300px;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
 
       .script-card:hover {
         transform: scale(1.05);
+        box-shadow: 0 0 15px var(--glow-purple), 0 0 25px var(--glow-magenta);
+        border-color: var(--glow-purple);
       }
 
       .script-image {
@@ -126,10 +134,13 @@
       .script-title {
         font-size: 16px;
         margin-bottom: 5px;
+        background: linear-gradient(to right, var(--glow-purple), var(--glow-magenta));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
       .script-info {
-        opacity: 0.8;
+        opacity: 0.85;
         font-size: 12px;
         margin-bottom: 8px;
       }
@@ -142,7 +153,7 @@
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        transition: background 0.3s;
+        transition: background 0.3s, color 0.3s;
         margin-top: auto;
         display: flex;
         justify-content: center;
@@ -151,7 +162,8 @@
       }
 
       .copy-button:hover {
-        background: var(--border);
+        background: var(--glow-purple);
+        color: white;
       }
 
       .copy-button.copied {
@@ -296,25 +308,19 @@
             const card = document.createElement("div");
             card.className = "script-card";
             card.innerHTML = ` 
-            <img src="${imageUrl}" 
-                 class="script-image"
-                 onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
-            <div class="script-content">
-              <h3 class="script-title">${script.title}</h3>
-              <p class="script-info">${
-                script.game?.name || "No game specified"
-              }</p>
-              <p class="script-info">Views: ${
-                script.views?.toLocaleString() || "N/A"
-              }</p>
-              <button class="copy-button" data-index="${
-                scriptsData.length - newScripts.length + index
-              }">
-                Copy Script
-                <span class="checkmark">&#10003;</span>
-              </button>
-            </div>
-          `;
+              <img src="${imageUrl}" 
+                   class="script-image"
+                   onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
+              <div class="script-content">
+                <h3 class="script-title">${script.title}</h3>
+                <p class="script-info">${script.game?.name || "No game specified"}</p>
+                <p class="script-info">Views: ${script.views?.toLocaleString() || "N/A"}</p>
+                <button class="copy-button" data-index="${scriptsData.length - newScripts.length + index}">
+                  Copy Script
+                  <span class="checkmark">&#10003;</span>
+                </button>
+              </div>
+            `;
             container.appendChild(card);
           });
 
@@ -361,7 +367,7 @@
           setTimeout(() => {
             button.innerHTML = originalText + " " + checkmark.outerHTML;
             button.classList.remove("copied");
-            checkmark.style.display = "none"; // Hide the checkmark after revert
+            checkmark.style.display = "none";
           }, 2000);
           showMessage("Script copied!", true);
         } catch (err) {
