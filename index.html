@@ -415,7 +415,7 @@
             const keyLabel = document.createElement("div");
             keyLabel.className = "script-label";
             keyLabel.classList.add(script.key ? "has-key" : "keyless");
-            keyLabel.textContent = script.key ? "Has Key" : "Keyless";
+            keyLabel.textContent = script.key ? "Key" : "Keyless";
             labelsContainer.appendChild(keyLabel);
             const scriptTypeLabel = document.createElement("div");
             scriptTypeLabel.className = "script-label";
@@ -432,7 +432,7 @@
          onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
     <div class="script-content">
       <h3 class="script-title">${script.title}</h3>
-      <p class="script-info">${script.game?.name || "No game specified"}</p>
+      <p class="script-info">${script.game?.name || "No game title"}</p>
       <p class="script-info">Views: ${
         script.views?.toLocaleString() || "N/A"
       }</p>
