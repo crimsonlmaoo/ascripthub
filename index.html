@@ -2,6 +2,9 @@
 
 <html lang="en">
   <head>
+    <script  type="text/javascript" src="https://codesandbox.io/public/sse-hooks/sse-hooks.e15ace8ccace5398a721ffec81f121de.js"></script>
+    <script  type="text/javascript" src="https://codesandbox.io/static/js/banner.d9cb10a38.js"></script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>scriptbuh</title>
@@ -375,7 +378,7 @@
           const apiUrl = searchTerm
             ? `https://scriptblox.com/api/script/search?q=${encodeURIComponent(
                 searchTerm
-              )}&page=${page}&limit=${amountToShow}&sortBy=${sortBy}`
+              )}&page=${page}&max=${amountToShow}&sortBy=${sortBy}`
             : `https://scriptblox.com/api/script/fetch?page=${page}&max=${amountToShow}&sortBy=${sortBy}`;
 
           const data = await fetchWithRetry(apiUrl);
@@ -415,7 +418,7 @@
             const keyLabel = document.createElement("div");
             keyLabel.className = "script-label";
             keyLabel.classList.add(script.key ? "has-key" : "keyless");
-            keyLabel.textContent = script.key ? "Key" : "Keyless";
+            keyLabel.textContent = script.key ? "Has Key" : "Keyless";
             labelsContainer.appendChild(keyLabel);
             const scriptTypeLabel = document.createElement("div");
             scriptTypeLabel.className = "script-label";
@@ -432,7 +435,7 @@
          onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
     <div class="script-content">
       <h3 class="script-title">${script.title}</h3>
-      <p class="script-info">${script.game?.name || "No game title"}</p>
+      <p class="script-info">${script.game?.name || "No game specified"}</p>
       <p class="script-info">Views: ${
         script.views?.toLocaleString() || "N/A"
       }</p>
