@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -54,7 +55,11 @@
 
       .title {
         font-size: 28px;
-        background: linear-gradient(to right, var(--glow-purple), var(--glow-magenta));
+        background: linear-gradient(
+          to right,
+          var(--glow-purple),
+          var(--glow-magenta)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
@@ -63,20 +68,21 @@
         display: flex;
         gap: 10px;
         flex: 1;
-        max-width: 1750px;
+        max-width: 800px;
+        justify-content: flex-end;
       }
 
       .search-input {
-        padding: 10px 15px;
+        padding: 8px 12px;
         border: 1px solid var(--border);
         background: black;
         color: var(--text-light);
         border-radius: 5px;
-        width: 100%;
+        width: 150px;
       }
 
       .search-button {
-        padding: 10px 20px;
+        padding: 8px 15px;
         background: black;
         color: var(--text-light);
         border: 1px solid var(--border);
@@ -88,6 +94,16 @@
       .search-button:hover {
         background: var(--glow-purple);
         color: white;
+      }
+
+      .dropdown {
+        background: var(--medium-bg);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        color: var(--text-light);
+        padding: 8px;
+        margin-right: 20px;
+        font-size: 14px;
       }
 
       .scripts-grid {
@@ -134,7 +150,11 @@
       .script-title {
         font-size: 16px;
         margin-bottom: 5px;
-        background: linear-gradient(to right, var(--glow-purple), var(--glow-magenta));
+        background: linear-gradient(
+          to right,
+          var(--glow-purple),
+          var(--glow-magenta)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
@@ -215,10 +235,16 @@
         background: var(--medium-bg);
         color: var(--text-light);
         padding: 12px 30px;
-        border-radius: 30px;
+        border-radius: 25px;
         font-size: 18px;
         opacity: 0.85;
         border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+      }
+
+      .page-indicator .page-number {
+        margin-left: 10px;
       }
 
       @keyframes spin {
@@ -229,15 +255,71 @@
           transform: rotate(360deg);
         }
       }
+      .script-labels {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        gap: 10px;
+        flex-direction: row;
+        align-items: center;
+        z-index: 1;
+      }
+
+      .script-label {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      }
+
+      .script-label.patched {
+        background-color: #ff4f81;
+      }
+
+      .script-label.keyless {
+        background-color: #808080;
+      }
+
+      .script-label.has-key {
+        background-color: #ff4f81;
+      }
+
+      .script-label.paid {
+        background-color: #ff4f81;
+      }
+
+      .script-label.free {
+        background-color: #4caf50;
+      }
     </style>
   </head>
+
   <body>
     <div class="header">
+      <div>
+        <select id="amountToShow" class="dropdown">
+          <option value="5">20 results</option>
+          <option value="10">15 results</option>
+          <option value="15">10 results</option>
+          <option value="20">5 results</option>
+        </select>
+        <select id="sortBy" class="dropdown">
+          <option value="views">Sort by views</option>
+          <option value="likeCount">Sort by likes</option>
+          <option value="createdAt">Sort by newest created</option>
+          <option value="updatedAt">Sort by last updated</option>
+          <option value="dislikeCount">Sort by dislikes</option>
+          <option value="accuracy">Sort by accuracy</option>
+        </select>
+      </div>
+
       <div class="search-box">
         <input
           type="text"
           class="search-input"
-          placeholder="Search scripts..."
+          placeholder="Search"
           id="searchInput"
         />
         <button class="search-button" onclick="newSearch()">Search</button>
@@ -249,15 +331,19 @@
     </div>
 
     <div class="notification" id="notification"></div>
-    <div class="page-indicator" id="pageIndicator">Page 1</div>
+    <div class="page-indicator" id="pageIndicator">
+      Page <span class="page-number">1</span>
+    </div>
 
     <script>
       let scriptsData = [];
       let page = 1;
       let isLoading = false;
       let searchTerm = "";
+      let amountToShow = 20;
+      let sortBy = "views";
+
       const proxies = [
-        "https://cors-anywhere.herokuapp.com/",
         "https://api.codetabs.com/v1/proxy/?quest=",
         "https://thingproxy.freeboard.io/fetch/",
       ];
@@ -289,8 +375,8 @@
           const apiUrl = searchTerm
             ? `https://scriptblox.com/api/script/search?q=${encodeURIComponent(
                 searchTerm
-              )}&page=${page}`
-            : `https://scriptblox.com/api/script/fetch?page=${page}`;
+              )}&page=${page}&limit=${amountToShow}&sortBy=${sortBy}`
+            : `https://scriptblox.com/api/script/fetch?page=${page}&max=${amountToShow}&sortBy=${sortBy}`;
 
           const data = await fetchWithRetry(apiUrl);
           const newScripts = data.result?.scripts || [];
@@ -307,20 +393,58 @@
 
             const card = document.createElement("div");
             card.className = "script-card";
-            card.innerHTML = ` 
-              <img src="${imageUrl}" 
-                   class="script-image"
-                   onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
-              <div class="script-content">
-                <h3 class="script-title">${script.title}</h3>
-                <p class="script-info">${script.game?.name || "No game specified"}</p>
-                <p class="script-info">Views: ${script.views?.toLocaleString() || "N/A"}</p>
-                <button class="copy-button" data-index="${scriptsData.length - newScripts.length + index}">
-                  Copy Script
-                  <span class="checkmark">&#10003;</span>
-                </button>
-              </div>
-            `;
+            card.style.position = "relative";
+
+            const createdAtDate = new Date(script.createdAt);
+            const formattedDate = createdAtDate.toLocaleString("en-US", {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              hour12: true,
+            });
+            const labelsContainer = document.createElement("div");
+            labelsContainer.className = "script-labels";
+            if (script.isPatched) {
+              const patchedLabel = document.createElement("div");
+              patchedLabel.className = "script-label patched";
+              patchedLabel.textContent = "Patched";
+              labelsContainer.appendChild(patchedLabel);
+            }
+            const keyLabel = document.createElement("div");
+            keyLabel.className = "script-label";
+            keyLabel.classList.add(script.key ? "has-key" : "keyless");
+            keyLabel.textContent = script.key ? "Has Key" : "Keyless";
+            labelsContainer.appendChild(keyLabel);
+            const scriptTypeLabel = document.createElement("div");
+            scriptTypeLabel.className = "script-label";
+            scriptTypeLabel.classList.add(
+              script.scriptType === "paid" ? "paid" : "free"
+            );
+            scriptTypeLabel.textContent =
+              script.scriptType === "paid" ? "Paid" : "Free";
+            labelsContainer.appendChild(scriptTypeLabel);
+            card.appendChild(labelsContainer);
+            card.innerHTML += `
+    <img src="${imageUrl}"
+         class="script-image"
+         onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
+    <div class="script-content">
+      <h3 class="script-title">${script.title}</h3>
+      <p class="script-info">${script.game?.name || "No game specified"}</p>
+      <p class="script-info">Views: ${
+        script.views?.toLocaleString() || "N/A"
+      }</p>
+      <p class="script-info">Created at: ${formattedDate}</p>
+      <button class="copy-button" data-index="${
+        scriptsData.length - newScripts.length + index
+      }">
+        Copy Script
+        <span class="checkmark">&#10003;</span>
+      </button>
+    </div>
+  `;
             container.appendChild(card);
           });
 
@@ -402,7 +526,7 @@
 
       function updatePageIndicator() {
         const pageIndicator = document.getElementById("pageIndicator");
-        pageIndicator.textContent = `Page ${page - 1}`;
+        pageIndicator.querySelector(".page-number").textContent = page - 1;
       }
 
       window.onload = () => {
@@ -412,6 +536,22 @@
           .addEventListener("keypress", (e) => {
             if (e.key === "Enter") newSearch();
           });
+
+        document
+          .getElementById("amountToShow")
+          .addEventListener("change", (e) => {
+            amountToShow = parseInt(e.target.value);
+            page = 1;
+            scriptsData = [];
+            loadScripts();
+          });
+
+        document.getElementById("sortBy").addEventListener("change", (e) => {
+          sortBy = e.target.value;
+          page = 1;
+          scriptsData = [];
+          loadScripts();
+        });
 
         window.addEventListener("scroll", () => {
           if (
