@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -16,7 +15,7 @@
         --light-bg: #2d0040;
         --text-light: #e0c4ff;
         --border: #6a0dad;
-        --success: #6effb4;
+        --success: #006400;
         --error: #ff4f81;
         --highlight: #ffb3ff;
         --glow-purple: #9f5cff;
@@ -179,26 +178,33 @@
         justify-content: center;
         align-items: center;
         gap: 8px;
-      }
-
-      .copy-button:hover {
-        background: var(--glow-purple);
-        color: white;
+        font-size: 14px;
       }
 
       .copy-button.copied {
-        background: var(--success);
+        background: #4caf50;
         color: white;
+      }
+
+      .copy-button .copy-icon {
+        font-size: 16px;
       }
 
       .copy-button .checkmark {
         display: none;
-        font-size: 18px;
-        color: white;
+        font-size: 16px;
+      }
+
+      .copy-button.copied .copy-icon {
+        display: none;
       }
 
       .copy-button.copied .checkmark {
         display: inline;
+      }
+
+      .copy-button.copied .button-text {
+        color: white;
       }
 
       .loader {
@@ -213,18 +219,46 @@
 
       .notification {
         position: fixed;
-        bottom: 80px;
-        right: 20px;
+        bottom: 20px;
+        right: -400px;
         background: var(--success);
         color: white;
-        padding: 15px 25px;
-        border-radius: 5px;
-        display: none;
+        padding: 10px 15px 6px;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
         opacity: 0;
         transform: translateY(20px);
         transition: all 0.4s ease;
         z-index: 9999;
+        max-width: 260px;
         backdrop-filter: blur(10px);
+        font-size: 13px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .notification.show {
+        right: 20px;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .notification-bar {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.7);
+        width: 100%;
+        margin-top: 6px;
+        border-radius: 0 0 4px 4px;
+        animation: slideOutBar 3s linear forwards;
+      }
+
+      @keyframes slideOutBar {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
       }
 
       .page-indicator {
@@ -255,6 +289,7 @@
           transform: rotate(360deg);
         }
       }
+
       .script-labels {
         position: absolute;
         top: 10px;
@@ -295,15 +330,14 @@
       }
     </style>
   </head>
-
   <body>
     <div class="header">
       <div>
         <select id="amountToShow" class="dropdown">
-          <option value="5">20 results</option>
-          <option value="10">15 results</option>
-          <option value="15">10 results</option>
-          <option value="20">5 results</option>
+          <option value="20">20 results</option>
+          <option value="15">15 results</option>
+          <option value="10">10 results</option>
+          <option value="5">5 results</option>
         </select>
         <select id="sortBy" class="dropdown">
           <option value="views">Sort by views</option>
@@ -314,7 +348,6 @@
           <option value="accuracy">Sort by accuracy</option>
         </select>
       </div>
-
       <div class="search-box">
         <input
           type="text"
@@ -325,16 +358,13 @@
         <button class="search-button" onclick="newSearch()">Search</button>
       </div>
     </div>
-
     <div class="scripts-grid" id="scriptsContainer">
       <div class="loader"></div>
     </div>
-
     <div class="notification" id="notification"></div>
     <div class="page-indicator" id="pageIndicator">
       Page <span class="page-number">1</span>
     </div>
-
     <script>
       let scriptsData = [];
       let page = 1;
@@ -342,7 +372,6 @@
       let searchTerm = "";
       let amountToShow = 20;
       let sortBy = "views";
-
       const proxies = [
         "https://api.codetabs.com/v1/proxy/?quest=",
         "https://thingproxy.freeboard.io/fetch/",
@@ -370,31 +399,25 @@
         isLoading = true;
         const container = document.getElementById("scriptsContainer");
         if (page === 1) container.innerHTML = '<div class="loader"></div>';
-
         try {
           const apiUrl = searchTerm
             ? `https://scriptblox.com/api/script/search?q=${encodeURIComponent(
                 searchTerm
               )}&page=${page}&max=${amountToShow}&sortBy=${sortBy}`
             : `https://scriptblox.com/api/script/fetch?page=${page}&max=${amountToShow}&sortBy=${sortBy}`;
-
           const data = await fetchWithRetry(apiUrl);
           const newScripts = data.result?.scripts || [];
           scriptsData = scriptsData.concat(newScripts);
-
           if (page === 1) container.innerHTML = "";
-
           newScripts.forEach((script, index) => {
             const imageUrl = script.image
               ? script.image.startsWith("http")
                 ? script.image
                 : `https://scriptblox.com${script.image}`
               : "https://placehold.co/220x120/2d2d2d/808080?text=No+Image";
-
             const card = document.createElement("div");
             card.className = "script-card";
             card.style.position = "relative";
-
             const createdAtDate = new Date(script.createdAt);
             const formattedDate = createdAtDate.toLocaleString("en-US", {
               weekday: "short",
@@ -427,37 +450,34 @@
             labelsContainer.appendChild(scriptTypeLabel);
             card.appendChild(labelsContainer);
             card.innerHTML += `
-    <img src="${imageUrl}"
-         class="script-image"
-         onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
-    <div class="script-content">
-      <h3 class="script-title">${script.title}</h3>
-      <p class="script-info">${script.game?.name || "No game specified"}</p>
-      <p class="script-info">Views: ${
-        script.views?.toLocaleString() || "N/A"
-      }</p>
-      <p class="script-info">Created at: ${formattedDate}</p>
-      <button class="copy-button" data-index="${
-        scriptsData.length - newScripts.length + index
-      }">
-        Copy Script
-        <span class="checkmark">&#10003;</span>
-      </button>
-    </div>
-  `;
+              <img src="${imageUrl}" class="script-image" onerror="this.src='https://placehold.co/220x120/2d2d2d/808080?text=Image+Error'">
+              <div class="script-content">
+                <h3 class="script-title">${script.title}</h3>
+                <p class="script-info">${
+                  script.game?.name || "No game specified"
+                }</p>
+                <p class="script-info">Views: ${
+                  script.views?.toLocaleString() || "N/A"
+                }</p>
+                <p class="script-info">Created at: ${formattedDate}</p>
+                <button class="copy-button" data-index="${
+                  scriptsData.length - newScripts.length + index
+                }">
+  <span class="checkmark">&#10003;</span>
+  <span class="copy-icon">❏</span>
+  <span class="button-text">Copy script</span>
+</button>
+              </div>
+            `;
             container.appendChild(card);
           });
-
           document.querySelectorAll(".copy-button").forEach((btn) => {
             btn.onclick = handleCopy;
           });
-
           updatePageIndicator();
-
           if (newScripts.length === 0 && page > 1) {
             showMessage("No more scripts to load!", false);
           }
-
           isLoading = false;
           page++;
         } catch (error) {
@@ -467,18 +487,17 @@
       }
 
       function handleCopy(event) {
-        const index = event.target.dataset.index;
+        const button = event.target.closest(".copy-button");
+        const index = button.dataset.index;
         const script = scriptsData[index]?.script;
-
         if (!script) {
           showMessage("No script found", false);
           return;
         }
 
-        const button = event.target;
         const checkmark = button.querySelector(".checkmark");
-        const originalText = button.textContent.trim();
-
+        const icon = button.querySelector(".copy-icon");
+        const text = button.querySelector(".button-text");
         const textarea = document.createElement("textarea");
         textarea.value = script;
         document.body.appendChild(textarea);
@@ -487,17 +506,19 @@
         try {
           document.execCommand("copy");
           button.classList.add("copied");
-          button.innerHTML = "Copied " + checkmark.outerHTML;
+          checkmark.style.display = "inline";
+          icon.style.display = "none";
+          text.textContent = "Copied";
           setTimeout(() => {
-            button.innerHTML = originalText + " " + checkmark.outerHTML;
-            button.classList.remove("copied");
             checkmark.style.display = "none";
-          }, 2000);
+            icon.style.display = "inline";
+            text.textContent = "Copy script";
+            button.classList.remove("copied");
+          }, 3100);
           showMessage("Script copied!", true);
-        } catch (err) {
+        } catch {
           showMessage("Failed to copy script", false);
         }
-
         document.body.removeChild(textarea);
       }
 
@@ -510,20 +531,23 @@
 
       function showMessage(text, success = true) {
         const notif = document.getElementById("notification");
-        notif.textContent = text;
+        notif.textContent = "";
+        notif.className = "notification";
         notif.style.background = success ? "var(--success)" : "var(--error)";
-        notif.style.display = "block";
-        setTimeout(() => {
-          notif.style.opacity = 1;
-          notif.style.transform = "translateY(0)";
-        }, 10);
-        setTimeout(() => {
-          notif.style.opacity = 0;
-          notif.style.transform = "translateY(20px)";
-          setTimeout(() => (notif.style.display = "none"), 400);
-        }, 3000);
-      }
+        notif.classList.add("show");
 
+        const msgText = document.createElement("div");
+        msgText.textContent = text;
+        notif.appendChild(msgText);
+
+        const bar = document.createElement("div");
+        bar.className = "notification-bar";
+        notif.appendChild(bar);
+
+        setTimeout(() => {
+          notif.classList.remove("show");
+        }, 3100);
+      }
       function updatePageIndicator() {
         const pageIndicator = document.getElementById("pageIndicator");
         pageIndicator.querySelector(".page-number").textContent = page - 1;
@@ -536,7 +560,6 @@
           .addEventListener("keypress", (e) => {
             if (e.key === "Enter") newSearch();
           });
-
         document
           .getElementById("amountToShow")
           .addEventListener("change", (e) => {
@@ -545,14 +568,12 @@
             scriptsData = [];
             loadScripts();
           });
-
         document.getElementById("sortBy").addEventListener("change", (e) => {
           sortBy = e.target.value;
           page = 1;
           scriptsData = [];
           loadScripts();
         });
-
         window.addEventListener("scroll", () => {
           if (
             window.innerHeight + window.scrollY >=
